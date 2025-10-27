@@ -1,0 +1,33 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  resourceGroupName: 'Dev'
+  location: 'Central India'
+
+stages:
+- stage: DeployInfra
+  displayName: 'Deploy Azure Infrastructure using Bicep'
+  jobs:
+  - job: Deploy
+    steps:
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'AzureServiceConnection'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          echo "Deploying resources using Bicep..."
+
+          az group create --name $resourceGroupName --location "$location"
+
+          az deployment group create \
+            --resource-group $resourceGroupName \
+            --template-file main.bicep \
+            --parameters administratorPassword='Poornima@12345!' \
+                         adminPassword='Poori@123!' \
+                         location="$location"
+
