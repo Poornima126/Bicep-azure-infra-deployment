@@ -2,27 +2,24 @@ trigger:
 - main
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'ubuntu-latest'
 
 steps:
 - task: AzureCLI@2
-  displayName: 'Deploy Bicep Infrastructure'
+  displayName: 'Deploy Bicep Infrastructure to Azure'
   inputs:
-    azureSubscription: 'azure-service-connection'
+    azureSubscription: 'azure-service-connection'   # 👈 your existing service connection
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
     inlineScript: |
-      echo "🔹 Starting Bicep deployment..."
-      RG_NAME="Dev"
-      LOCATION="CentralIndia"
-      TEMPLATE_FILE="$(System.DefaultWorkingDirectory)/infra/main.bicep"
-      PARAM_FILE="$(System.DefaultWorkingDirectory)/infra/parameters.json"
+      echo "🔹 Validating Bicep file..."
+      az bicep build --file infra/main.bicep
 
-      echo "Using template: $TEMPLATE_FILE"
-      ls -l $(dirname $TEMPLATE_FILE)
+      echo "🚀 Starting deployment to Resource Group: Dev"
 
       az deployment group create \
-        --resource-group $RG_NAME \
-        --template-file $TEMPLATE_FILE \
-        --parameters @$PARAM_FILE \
+        --resource-group Dev \                       # 👈 your existing resource group
+        --template-file infra/main.bicep \
+        --parameters @infra/parameters.json \
         --output table
+
