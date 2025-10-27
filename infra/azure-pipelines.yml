@@ -1,48 +1,30 @@
-# ============================================================
-# Azure DevOps Pipeline to deploy Bicep template
-# ============================================================
+# azure-pipelines.yml
 
 trigger:
-- main   # or change to 'master' if that's your branch
+- main
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: ubuntu-latest
+
+variables:
+  RESOURCE_GROUP: 'Dev'
+  LOCATION: 'centralindia'
+  BICEP_FILE: 'infra/main.bicep'
 
 steps:
-# ✅ Step 1: Checkout your repository
-- checkout: self
-  displayName: 'Checkout source code'
-
-# ✅ Step 2: Azure CLI task to deploy the Bicep template
 - task: AzureCLI@2
   displayName: 'Deploy Azure Infrastructure using Bicep'
   inputs:
-    azureSubscription: 'azure-service-connection'  # 🔁 Replace with your actual service connection name
-    scriptType: 'bash'
-    scriptLocation: 'inlineScript'
+    azureSubscription: 'azure-service-connection'
+    scriptType: bash
+    scriptLocation: inlineScript
     inlineScript: |
-      echo "========================================"
-      echo "Starting Azure Bicep deployment..."
-      echo "========================================"
+      echo "Deploying to resource group: $RESOURCE_GROUP"
+      az group show -n $RESOURCE_GROUP || az group create -n $RESOURCE_GROUP -l $LOCATION
 
-      # Path to your Bicep file (change if stored in a subfolder)
-      BICEP_FILE="main.bicep"
-
-      # Validate file existence before deployment
-      if [ ! -f "$BICEP_FILE" ]; then
-        echo "❌ ERROR: Bicep file not found at path: $BICEP_FILE"
-        echo "Check if your file is in a folder, e.g., bicep/main.bicep"
-        exit 1
-      fi
-
-      echo "✅ Found Bicep file: $BICEP_FILE"
-      echo "Deploying to resource group: Dev"
-
+      echo "Starting deployment..."
       az deployment group create \
-        --resource-group Dev \
-        --template-file $BICEP_FILE
-
-      echo "========================================"
-      echo "✅ Deployment completed successfully!"
-      echo "========================================"
+        --resource-group $RESOURCE_GROUP \
+        --template-file $BICEP_FILE \
+        --output json
 
