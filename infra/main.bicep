@@ -1,44 +1,62 @@
 param location string = resourceGroup().location
-param prefix string = 'demo'
 
-module storage './modules/storage.bicep' = {
-  name: 'storageDeploy'
+@secure()
+param sqlAdminPassword string = 'Password@12345'  // Change or override via pipeline
+@secure()
+param vmAdminPassword string = 'VmPassword@12345'
+
+// Define resource names explicitly
+var storageAccountName = 'demostorage132'
+var sqlServerName = 'demosqlserver132'
+var sqlDatabaseName = 'demodb132'
+var sqlAdminUsername = 'demoAdmin'
+var appServicePlanName = 'demoplan132'
+var webAppName = 'demowebapp132'
+var vmName = 'demovm132'
+var vmAdminUsername = 'demoadmin'
+
+// 🌩️ Storage Account
+module storage 'modules/storage.bicep' = {
+  name: 'storageDeployment'
   params: {
-    prefix: prefix
+    storageAccountName: storageAccountName
     location: location
   }
 }
 
-module sqlModule './modules/sql.bicep' = {
-  name: 'sqlDeploy'
+// 💾 SQL Server + Database
+module sql 'modules/sql.bicep' = {
+  name: 'sqlDeployment'
   params: {
-    prefix: prefix
-    location: location
+    sqlServerName: sqlServerName
+    sqlDatabaseName: sqlDatabaseName
+    sqlAdminUsername: sqlAdminUsername
     sqlAdminPassword: sqlAdminPassword
-  }
-}
-
-module appservice './modules/appservice.bicep' = {
-  name: 'appServiceDeploy'
-  params: {
-    prefix: prefix
-    location: location
-    storageAccountName: storage.outputs.storageAccountName
-  }
-}
-
-module vm './modules/vm.bicep' = {
-  name: 'vmDeploy'
-  params: {
-    prefix: prefix
     location: location
   }
+  dependsOn: [storage]
 }
 
-module apim './modules/apim.bicep' = {
-  name: 'apimDeploy'
+// ⚙️ App Service
+module appservice 'modules/appservice.bicep' = {
+  name: 'appserviceDeployment'
   params: {
-    prefix: prefix
+    appServicePlanName: appServicePlanName
+    webAppName: webAppName
     location: location
+    storageAccountName: storageAccountName
   }
+  dependsOn: [sql]
+}
+
+// 🖥️ Virtual Machine
+module vm 'modules/vm.bicep' = {
+  name: 'vmDeployment'
+  params: {
+    vmName: vmName
+    location: location
+    adminUsername: vmAdminUsername
+    adminPassword: vmAdminPassword
+  }
+  dependsOn: [appservice]
 }
