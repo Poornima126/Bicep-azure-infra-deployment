@@ -9,11 +9,12 @@ module storage './modules/storage.bicep' = {
   }
 }
 
-module sql './modules/sql.bicep' = {
+module sqlModule './modules/sql.bicep' = {
   name: 'sqlDeploy'
   params: {
     prefix: prefix
     location: location
+    sqlAdminPassword: sqlAdminPassword
   }
 }
 
@@ -41,4 +42,3 @@ module apim './modules/apim.bicep' = {
     location: location
   }
 }
-
