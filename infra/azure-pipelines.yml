@@ -1,33 +1,19 @@
 trigger:
-- main
+- main  # or master branch
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'ubuntu-latest'
 
-variables:
-  resourceGroupName: 'Dev'
-  location: 'Central India'
-
-stages:
-- stage: DeployInfra
-  displayName: 'Deploy Azure Infrastructure using Bicep'
-  jobs:
-  - job: Deploy
-    steps:
-    - task: AzureCLI@2
-      inputs:
-        azureSubscription: 'azure-service-connection'
-        scriptType: 'bash'
-        scriptLocation: 'inlineScript'
-        inlineScript: |
-          echo "Deploying resources using Bicep..."
-
-          az group create --name $resourceGroupName --location "$location"
-
-          az deployment group create \
-            --resource-group $resourceGroupName \
-            --template-file main.bicep \
-            --parameters administratorPassword='Poornima@12345!' \
-                         adminPassword='Poori@123!' \
-                         location="$location"
+steps:
+- task: AzureCLI@2
+  displayName: 'azure-service-connection'
+  inputs:
+    azureSubscription: 'Your-Service-Connection-Name'   # Change this
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      echo "Deploying Bicep template..."
+      az deployment group create \
+        --resource-group Dev \
+        --template-file main.bicep
 
