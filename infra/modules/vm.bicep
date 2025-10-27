@@ -56,4 +56,3 @@ resource vm 'Microsoft.Compute/virtualMachines@2023-09-01' = {
     }
   }
 }
-
