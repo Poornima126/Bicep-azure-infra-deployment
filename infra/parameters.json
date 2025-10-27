@@ -7,6 +7,9 @@
     },
     "location": {
       "value": "CentralIndia"
+    },
+    "sqlAdminPassword": {
+      "value": "Demo@12345!"
     }
   }
 }

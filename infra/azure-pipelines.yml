@@ -2,33 +2,27 @@ trigger:
 - main
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'windows-latest'
 
-variables:
-  location: 'CentralIndia'
-  resourceGroup: 'Dev'
-  prefix: 'demo'
+steps:
+- task: AzureCLI@2
+  displayName: 'Deploy Bicep Infrastructure'
+  inputs:
+    azureSubscription: 'azure-service-connection'
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      echo "🔹 Starting Bicep deployment..."
+      RG_NAME="Dev"
+      LOCATION="CentralIndia"
+      TEMPLATE_FILE="$(System.DefaultWorkingDirectory)/infra/main.bicep"
+      PARAM_FILE="$(System.DefaultWorkingDirectory)/infra/parameters.json"
 
-stages:
-- stage: DeployInfrastructure
-  displayName: "Deploy Azure Infrastructure via Bicep"
-  jobs:
-  - job: Deploy
-    displayName: "Deploy all resources"
-    steps:
-    - checkout: self
+      echo "Using template: $TEMPLATE_FILE"
+      ls -l $(dirname $TEMPLATE_FILE)
 
-    - task: AzureCLI@2
-      inputs:
-        azureSubscription: 'azure-service-connection'
-        scriptType: 'bash'
-        scriptLocation: 'inlineScript'
-        inlineScript: |
-          echo "Creating Resource Group if not exists..."
-          az group create --name ${{ variables.resourceGroup }} --location ${{ variables.location }}
-
-          echo "Deploying Bicep Template..."
-          az deployment group create \
-            --resource-group ${{ variables.resourceGroup }} \
-            --template-file infra/main.bicep \
-            --parameters prefix=${{ variables.prefix }} location=${{ variables.location }}
+      az deployment group create \
+        --resource-group $RG_NAME \
+        --template-file $TEMPLATE_FILE \
+        --parameters @$PARAM_FILE \
+        --output table

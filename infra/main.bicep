@@ -1,63 +1,51 @@
+param prefix string
 param location string = resourceGroup().location
-
 @secure()
-param sqlAdminPassword string = 'Password@12345'  // Change or override via pipeline
-@secure()
-param vmAdminPassword string = 'VmPassword@12345'
+param sqlAdminPassword string
 
-// Define resource names explicitly
-var storageAccountName = 'demostorage132'
-var sqlServerName = 'demosqlserver132'
-var sqlDatabaseName = 'demodb132'
-var sqlAdminUsername = 'demoAdmin'
-var appServicePlanName = 'demoplan132'
-var webAppName = 'demowebapp132'
-var vmName = 'demovm132'
-var vmAdminUsername = 'demoadmin'
-
-// 🌩️ Storage Account
+// Storage
 module storage 'modules/storage.bicep' = {
-  name: 'storageDeployment'
+  name: 'storageModule'
   params: {
-    storageAccountName: storageAccountName
+    prefix: prefix
     location: location
   }
 }
 
-// 💾 SQL Server + Database
+// SQL
 module sql 'modules/sql.bicep' = {
-  name: 'sqlDeployment'
+  name: 'sqlModule'
   params: {
-    sqlServerName: sqlServerName
-    sqlDatabaseName: sqlDatabaseName
-    sqlAdminUsername: sqlAdminUsername
+    prefix: prefix
+    location: location
     sqlAdminPassword: sqlAdminPassword
-    location: location
   }
-  dependsOn: [storage]
 }
 
-// ⚙️ App Service
-module appservice 'modules/appservice.bicep' = {
-  name: 'appserviceDeployment'
+// App Service
+module app 'modules/appservice.bicep' = {
+  name: 'appModule'
   params: {
-    appServicePlanName: appServicePlanName
-    webAppName: webAppName
+    prefix: prefix
     location: location
-    storageAccountName: storageAccountName
   }
-  dependsOn: [sql]
 }
 
-// 🖥️ Virtual Machine
+// Virtual Machine
 module vm 'modules/vm.bicep' = {
-  name: 'vmDeployment'
+  name: 'vmModule'
   params: {
-    vmName: vmName
+    prefix: prefix
     location: location
-    adminUsername: vmAdminUsername
-    adminPassword: vmAdminPassword
   }
-  dependsOn: [appservice]
+}
+
+// API Management
+module apim 'modules/apim.bicep' = {
+  name: 'apimModule'
+  params: {
+    prefix: prefix
+    location: location
+  }
 }
 
