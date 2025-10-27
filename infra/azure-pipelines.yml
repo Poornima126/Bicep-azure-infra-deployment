@@ -6,9 +6,9 @@ pool:
 
 steps:
 - task: AzureCLI@2
-  displayName: 'azure-service-connection'
+  displayName: 'Deploy Bicep template to Azure'
   inputs:
-    azureSubscription: 'Your-Service-Connection-Name'   # Change this
+    azureSubscription: 'azure-service-connection'   # Change this
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
     inlineScript: |
