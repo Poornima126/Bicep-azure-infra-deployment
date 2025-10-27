@@ -32,4 +32,3 @@ stages:
             --resource-group ${{ variables.resourceGroup }} \
             --template-file infra/main.bicep \
             --parameters prefix=${{ variables.prefix }} location=${{ variables.location }}
-

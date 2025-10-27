@@ -60,3 +60,4 @@ module vm 'modules/vm.bicep' = {
   }
   dependsOn: [appservice]
 }
+
